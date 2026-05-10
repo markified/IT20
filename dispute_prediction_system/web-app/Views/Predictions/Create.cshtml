@@ -1,0 +1,62 @@
+@{
+    ViewData["Title"] = "Predict Invoice Dispute";
+}
+
+<h2>Predict Invoice Dispute</h2>
+
+<form method="post">
+
+    <!-- Country Code -->
+    <div>
+        <label>Country Code</label>
+        <select name="features[countryCode]" required>
+            <option value="391">391</option>
+            <option value="406">406</option>
+            <option value="770">770</option>
+            <option value="818">818</option>
+            <option value="897">897</option>
+        </select>
+    </div>
+
+    <br />
+
+    <!-- Paperless Bill -->
+    <div>
+        <label>Paperless Bill</label>
+        <select name="features[PaperlessBill]" required>
+            <option value="Paper">Paper</option>
+            <option value="Electronic">Electronic</option>
+        </select>
+    </div>
+
+    <br />
+
+    <!-- Invoice Amount -->
+    <div>
+        <label>Invoice Amount</label>
+        <input type="number" step="0.01" min="0" name="features[InvoiceAmount]" required />
+    </div>
+
+    <br />
+
+    <!-- Invoice Month -->
+    <div>
+        <label>Invoice Month (1–12)</label>
+        <input type="number" step="1" min="1" max="12" name="features[InvoiceMonth]" required />
+    </div>
+
+    <br />
+
+    <!-- Invoice Day Of Week -->
+    <div>
+        <label>Invoice Day Of Week (0=Mon … 6=Sun)</label>
+        <input type="number" step="1" min="0" max="6" name="features[InvoiceDayOfWeek]" required />
+    </div>
+
+    <br />
+
+    <button type="submit">Predict (via FastAPI)</button>
+</form>
+
+<br />
+<p><a asp-action="History">View History</a></p>

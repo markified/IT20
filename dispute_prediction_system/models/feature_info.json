@@ -1,0 +1,36 @@
+{
+  "all_features": [
+    "countryCode",
+    "PaperlessBill",
+    "InvoiceAmount",
+    "InvoiceMonth",
+    "InvoiceDayOfWeek"
+  ],
+  "categorical_features": [
+    "countryCode",
+    "PaperlessBill"
+  ],
+  "numeric_features": [
+    "InvoiceAmount",
+    "InvoiceMonth",
+    "InvoiceDayOfWeek"
+  ],
+  "categorical_values": {
+    "countryCode": [
+      "391",
+      "406",
+      "770",
+      "818",
+      "897"
+    ],
+    "PaperlessBill": [
+      "Electronic",
+      "Paper"
+    ]
+  },
+  "target": "Disputed",
+  "classes": [
+    "No",
+    "Yes"
+  ]
+}
