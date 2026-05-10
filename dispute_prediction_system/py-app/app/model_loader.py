@@ -78,8 +78,9 @@ def predict_from_dict(payload: dict):
 
     X = pd.DataFrame([row], columns=_features)
 
+    THRESHOLD = 0.35
     proba = float(_model.predict_proba(X)[0, 1])
-    label = _classes[1] if proba >= 0.5 else _classes[0]
+    label = _classes[1] if proba >= THRESHOLD else _classes[0]
     return label, proba
 
 

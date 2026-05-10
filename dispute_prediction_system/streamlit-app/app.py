@@ -35,6 +35,8 @@ def main():
 
     model, features, cat_cols, num_cols, cat_vals, classes = load_artifacts()
 
+    THRESHOLD = 0.35  # flag as dispute if probability >= this value
+
     mode = st.radio("Mode", ["Manual Input", "CSV Upload", "History"], horizontal=True)
 
     # ------------------ MANUAL INPUT ------------------
@@ -55,7 +57,7 @@ def main():
         if st.button("Predict"):
             X = pd.DataFrame([inputs], columns=features)
             proba = float(model.predict_proba(X)[0, 1])
-            label = classes[1] if proba >= 0.5 else classes[0]
+            label = classes[1] if proba >= THRESHOLD else classes[0]
 
             insert_prediction(
                 datetime.now().isoformat(timespec="seconds"),
@@ -88,33 +90,45 @@ def main():
 
                 X = df[features].copy()
                 proba = model.predict_proba(X)[:, 1]
-                labels = np.where(proba >= 0.5, classes[1], classes[0])
+                labels = np.where(proba >= THRESHOLD, classes[1], classes[0])
 
                 out = df.copy()
                 out["dispute_probability"] = proba
                 out["prediction"] = labels
 
-                st.success(f"Predicted {len(out)} rows.")
-                st.dataframe(out.head(50), use_container_width=True)
+                disputed_only = st.checkbox("Show disputed invoices only", value=False)
+                display = out[out["prediction"] == "Yes"] if disputed_only else out
+
+                st.success(
+                    f"Predicted {len(out)} rows — "
+                    f"{(labels == 'Yes').sum()} flagged as disputed."
+                )
+                st.dataframe(display.head(50), use_container_width=True)
 
                 st.download_button(
-                    "Download predictions.csv",
-                    out.to_csv(index=False).encode("utf-8"),
-                    "predictions.csv",
+                    "Download disputed.csv" if disputed_only else "Download predictions.csv",
+                    display.to_csv(index=False).encode("utf-8"),
+                    "disputed.csv" if disputed_only else "predictions.csv",
                     "text/csv",
                 )
 
     # ------------------ HISTORY ------------------
     else:
         st.subheader("Recent Predictions (DB)")
-        rows = fetch_latest(30)
+        disputed_only = st.checkbox("Show disputed invoices only", value=False)
+        rows = fetch_latest(100)
         if rows:
             df_hist = pd.DataFrame(
                 rows,
                 columns=["id", "created_at", "features_json", "prediction", "probability"],
             )
+            if disputed_only:
+                df_hist = df_hist[df_hist["prediction"] == "Yes"]
             df_hist["probability"] = df_hist["probability"].map(lambda x: f"{x:.2%}")
-            st.dataframe(df_hist, use_container_width=True)
+            if df_hist.empty:
+                st.info("No disputed predictions found.")
+            else:
+                st.dataframe(df_hist, use_container_width=True)
         else:
             st.info("No predictions yet.")
 
