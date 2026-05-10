@@ -74,12 +74,25 @@ def main():
     # ------------------ CSV UPLOAD ------------------
     elif mode == "CSV Upload":
         st.subheader("Upload CSV for Batch Prediction")
-        st.caption("Required columns:")
+        st.caption("Upload the raw dataset or a CSV with these columns (InvoiceMonth & InvoiceDayOfWeek are auto-derived from InvoiceDate if present):")
         st.code(", ".join(features))
 
         file = st.file_uploader("Upload CSV", type=["csv"])
         if file:
             df = pd.read_csv(file)
+
+            # Auto-engineer features from InvoiceDate if present
+            if "InvoiceDate" in df.columns:
+                df["InvoiceDate"] = pd.to_datetime(df["InvoiceDate"], errors="coerce")
+                if "InvoiceMonth" not in df.columns:
+                    df["InvoiceMonth"] = df["InvoiceDate"].dt.month
+                if "InvoiceDayOfWeek" not in df.columns:
+                    df["InvoiceDayOfWeek"] = df["InvoiceDate"].dt.dayofweek
+
+            # countryCode must be string to match training
+            if "countryCode" in df.columns:
+                df["countryCode"] = df["countryCode"].astype(str)
+
             st.dataframe(df.head(20), use_container_width=True)
 
             if st.button("Predict CSV"):
