@@ -5,32 +5,28 @@ Instructions
 Using your models from 1st Laboratory Exam:
 
 1. Load and Prepare Data
-Load dataset
-Apply preprocessing if needed:
-Handle missing values
-Encode categorical variables
-Train-test split
-
+   Load dataset
+   Apply preprocessing if needed:
+   Handle missing values
+   Encode categorical variables
+   Train-test split
 2. Baseline Models
-Run both models:
-Human-Implemented Model
-AI-Recommended Model
-Record baseline performance using appropriate metrics
-
+   Run both models:
+   Human-Implemented Model
+   AI-Recommended Model
+   Record baseline performance using appropriate metrics
 3. Model Refinement (Section 2.6)
-Apply refinement techniques to both models:
-Hyperparameter tuning
-Feature selection or feature engineering
-
+   Apply refinement techniques to both models:
+   Hyperparameter tuning
+   Feature selection or feature engineering
 4. Train and Evaluate Refined Models
-Train refined versions of both models
-Compute evaluation metrics
-
+   Train refined versions of both models
+   Compute evaluation metrics
 5. Results (Section 3)
-Present:
-Baseline vs Refined performance for both models
-Comparison of model results
-Feature importance (if applicable)
+   Present:
+   Baseline vs Refined performance for both models
+   Comparison of model results
+   Feature importance (if applicable)
 
 Output Requirements
 Your notebook must include:
