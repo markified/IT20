@@ -3,8 +3,12 @@
     "countryCode",
     "PaperlessBill",
     "InvoiceAmount",
+    "CreditTermDays",
     "InvoiceMonth",
-    "InvoiceDayOfWeek"
+    "InvoiceDayOfWeek",
+    "InvoiceQuarter",
+    "DaysSincePaperless",
+    "CustomerFreq"
   ],
   "categorical_features": [
     "countryCode",
@@ -12,8 +16,12 @@
   ],
   "numeric_features": [
     "InvoiceAmount",
+    "CreditTermDays",
     "InvoiceMonth",
-    "InvoiceDayOfWeek"
+    "InvoiceDayOfWeek",
+    "InvoiceQuarter",
+    "DaysSincePaperless",
+    "CustomerFreq"
   ],
   "categorical_values": {
     "countryCode": [
@@ -32,5 +40,6 @@
   "classes": [
     "No",
     "Yes"
-  ]
+  ],
+  "operating_threshold": 0.6907
 }
