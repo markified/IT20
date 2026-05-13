@@ -15,8 +15,8 @@ import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report, roc_auc_score, precision_recall_curve
+from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
@@ -61,9 +61,6 @@ def main() -> None:
             (
                 "clf",
                 RandomForestClassifier(
-                    n_estimators=300,
-                    max_depth=None,
-                    min_samples_split=4,
                     class_weight="balanced",
                     random_state=42,
                     n_jobs=-1,
@@ -72,20 +69,45 @@ def main() -> None:
         ]
     )
 
+    param_grid = {
+        "clf__n_estimators": [100, 200, 300],
+        "clf__max_depth": [None, 5, 10],
+        "clf__min_samples_split": [2, 5, 10]
+    }
+
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    grid = GridSearchCV(pipe, param_grid=param_grid, cv=cv, scoring="f1", n_jobs=-1)
+
     X_tr, X_te, y_tr, y_te = train_test_split(
         X, y, test_size=0.2, stratify=y, random_state=42
     )
 
-    pipe.fit(X_tr, y_tr)
+    print("Running GridSearchCV to find optimal hyperparameters...")
+    grid.fit(X_tr, y_tr)
+    best_model = grid.best_estimator_
+    print(f"Best parameters found: {grid.best_params_}")
 
-    pred = pipe.predict(X_te)
-    proba = pipe.predict_proba(X_te)[:, 1]
+    # Calibrate threshold for at least 0.50 precision on training data
+    proba_tr = best_model.predict_proba(X_tr)[:, 1]
+    precisions, recalls, thresholds = precision_recall_curve(y_tr, proba_tr)
+    target_precision = 0.50
+    valid = [(t, p, r) for p, r, t in zip(precisions[:-1], recalls[:-1], thresholds) if p >= target_precision]
+    if valid:
+        best_t, best_p, best_r = min(valid, key=lambda x: x[0])
+        print(f"Calibrated threshold (train): {best_t:.3f} (Precision={best_p:.4f}, Recall={best_r:.4f})")
+    else:
+        best_t = 0.5
+        print("Could not calibrate threshold for target precision. Defaulting to 0.5")
 
+    proba = best_model.predict_proba(X_te)[:, 1]
+    pred = (proba >= best_t).astype(int)
+
+    print("\nTest Set Evaluation:")
     print("Accuracy:", accuracy_score(y_te, pred))
     print("ROC AUC :", roc_auc_score(y_te, proba))
     print(classification_report(y_te, pred, target_names=["No", "Yes"]))
 
-    joblib.dump(pipe, MODEL_PATH)
+    joblib.dump(best_model, MODEL_PATH)
 
     info = {
         "all_features": ALL_FEATURES,
@@ -97,6 +119,7 @@ def main() -> None:
         },
         "target": "Disputed",
         "classes": ["No", "Yes"],
+        "operating_threshold": float(best_t),
     }
     INFO_PATH.write_text(json.dumps(info, indent=2), encoding="utf-8")
 

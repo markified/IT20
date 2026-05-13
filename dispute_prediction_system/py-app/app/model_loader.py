@@ -14,10 +14,11 @@ _cat_cols = None
 _num_cols = None
 _cat_vals = None
 _classes = None
+_operating_threshold = None
 
 
 def load_artifacts():
-    global _model, _features, _cat_cols, _num_cols, _cat_vals, _classes
+    global _model, _features, _cat_cols, _num_cols, _cat_vals, _classes, _operating_threshold
 
     if _model is None:
         _model = joblib.load(MODEL_PATH)
@@ -39,6 +40,7 @@ def load_artifacts():
         _num_cols = info.get("numeric_features", [])
         _cat_vals = info.get("categorical_values", {})
         _classes = info.get("classes", ["No", "Yes"])
+        _operating_threshold = info.get("operating_threshold", 0.35)
 
 
 def coerce_types(row: dict) -> dict:
@@ -78,7 +80,7 @@ def predict_from_dict(payload: dict):
 
     X = pd.DataFrame([row], columns=_features)
 
-    THRESHOLD = 0.35
+    THRESHOLD = _operating_threshold
     proba = float(_model.predict_proba(X)[0, 1])
     label = _classes[1] if proba >= THRESHOLD else _classes[0]
     return label, proba
